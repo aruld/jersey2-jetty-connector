@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/aruld/jersey2-jetty-connector.png)](https://travis-ci.org/aruld/jersey2-jetty-connector)
+
 Jersey 2 JAX-RS Client Connector for Jetty
 ===============================
 
