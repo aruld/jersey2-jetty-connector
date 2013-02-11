@@ -7,6 +7,8 @@ Implemented based on Jersey 2 m12 release. It supports both synchronous and asyn
 
 It supports cookie handling, basic authentication and proxy servers.
 
+Supported HTTP verbs: GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, MOVE
+
 Requirements
 ----
 
@@ -115,3 +117,12 @@ Client-side Logging
 
     2013-02-10 15:36:35.710:INFO:oejc.HttpClient:main: Stopped org.eclipse.jetty.client.HttpClient@60dd1773
 
+
+
+TODO
+----
+
+- [ ] Follow redirects does not work
+- [ ] Support Read timeout/connect timeout
+- [ ] SSL client support
+- [ ] Add more tests

@@ -40,85 +40,87 @@
 package org.glassfish.jersey.jetty.connector;
 
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Test;
 
-import javax.ws.rs.POST;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.Arrays;
+import javax.ws.rs.core.*;
+
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Paul Sandoz (paul.sandoz at oracle.com)
  * @author Arul Dhesiaseelan (aruld@acm.org)
  */
-public class GZIPContentEncodingTest extends JerseyTest {
+public class CookieTest extends JerseyTest {
 
-    private static final Logger LOGGER = Logger.getLogger(EntityTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CookieTest.class.getName());
 
     @Path("/")
-    public static class Resource {
-        @POST
-        public byte[] post(byte[] content) {
-            return content;
+    public static class CookieResource {
+        @GET
+        public Response get(@Context HttpHeaders h) {
+            Cookie c = h.getCookies().get("name");
+            String e = (c == null) ? "NO-COOKIE" : c.getValue();
+            return Response.ok(e).
+                    cookie(new NewCookie("name", "value")).build();
         }
     }
 
     @Override
     protected Application configure() {
-        ResourceConfig config = new ResourceConfig(Resource.class);
+        ResourceConfig config = new ResourceConfig(CookieResource.class);
         config.register(new LoggingFilter(LOGGER, true));
         return config;
     }
 
-    @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.register(GZipEncoder.class);
-        clientConfig.connector(new JettyConnector(clientConfig));
-    }
-
     @Test
-    public void testPost() {
-        WebTarget r = target();
-        byte[] content = new byte[1024 * 1024];
-        assertTrue(Arrays.equals(content, r.request().post(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE)).readEntity(byte[].class)));
-
-        Response cr = r.request().post(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        assertTrue(cr.hasEntity());
-        cr.close();
-    }
-
-    @Test
-    public void testPostChunked() {
+    public void testCookieResource() {
         ClientConfig cc = new ClientConfig();
-        cc.setProperty(ClientProperties.CHUNKED_ENCODING_SIZE, 1024);
-        cc.connector(new JettyConnector(cc));
-        cc.register(new LoggingFilter(LOGGER, true));
-
-        Client client = ClientFactory.newClient(cc);
+        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
         WebTarget r = client.target(getBaseUri());
 
-        byte[] content = new byte[1024 * 1024];
-        assertTrue(Arrays.equals(content, r.request().post(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE)).readEntity(byte[].class)));
 
-        Response cr = r.request().post(Entity.text("POST"));
-        assertTrue(cr.hasEntity());
-        cr.close();
-
-        client.close();
+        assertEquals("NO-COOKIE", r.request().get(String.class));
+        assertEquals("value", r.request().get(String.class));
     }
 
+    @Test
+    public void testDisabledCookies() {
+        ClientConfig cc = new ClientConfig();
+        cc.setProperty(JettyClientProperties.DISABLE_COOKIES, true);
+        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        WebTarget r = client.target(getBaseUri());
+
+        assertEquals("NO-COOKIE", r.request().get(String.class));
+        assertEquals("NO-COOKIE", r.request().get(String.class));
+
+        if (((JettyConnector) cc.getConnector()).getCookieStore() != null) {
+            assertTrue(((JettyConnector) cc.getConnector()).getCookieStore().getCookies().size() == 0);
+        } else {
+            assertNull(((JettyConnector) cc.getConnector()).getCookieStore());
+        }
+    }
+
+    @Test
+    public void testCookies() {
+        ClientConfig cc = new ClientConfig();
+        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        WebTarget r = client.target(getBaseUri());
+
+        assertEquals("NO-COOKIE", r.request().get(String.class));
+        assertEquals("value", r.request().get(String.class));
+
+        assertNotNull(((JettyConnector) cc.getConnector()).getCookieStore().getCookies());
+        assertEquals(1, ((JettyConnector) cc.getConnector()).getCookieStore().getCookies().size());
+        assertEquals("value", ((JettyConnector) cc.getConnector()).getCookieStore().getCookies().get(0).getValue());
+    }
 }

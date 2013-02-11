@@ -45,7 +45,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.DigestAuthentication;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
@@ -114,15 +113,14 @@ public class JettyConnector extends RequestWriter implements Connector {
 
             if (disableCookies)
                 client.setCookieStore(new HttpCookieStore.Empty());
-            this.cookieStore = client.getCookieStore();
         }
-
 
         try {
             client.start();
         } catch (Exception e) {
             throw new ClientException("Failed to start the client.", e);
         }
+        this.cookieStore = client.getCookieStore();
     }
 
     private static URI getProxyUri(final Object proxy) {
@@ -256,6 +254,18 @@ public class JettyConnector extends RequestWriter implements Connector {
                 request = client.newRequest(uri);
                 request.method(HttpMethod.OPTIONS);
                 break;
+            case "TRACE":
+                request = client.newRequest(uri);
+                request.method(HttpMethod.TRACE);
+                break;
+            case "CONNECT":
+                request = client.newRequest(uri);
+                request.method(HttpMethod.CONNECT);
+                break;
+            case "MOVE":
+                request = client.newRequest(uri);
+                request.method(HttpMethod.MOVE);
+                break;
             default:
                 throw new ClientException("Method " + strMethod + " not supported.");
         }
@@ -295,7 +305,7 @@ public class JettyConnector extends RequestWriter implements Connector {
             return null;
         }
 
-        //TODO: Jetty content provider output stream?
+        //TODO: Jetty content provider output stream support?
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             final RequestEntityWriter rew = this.getRequestEntityWriter(requestContext);
@@ -376,7 +386,12 @@ public class JettyConnector extends RequestWriter implements Connector {
         Iterator<HttpField> itr = original.getHeaders().iterator();
         while (itr.hasNext()) {
             HttpField header = itr.next();
-            responseContext.getHeaders().add(header.getName(), header.getValue());
+            List<String> list = responseContext.getHeaders().get(header.getName());
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(header.getValue());
+            responseContext.getHeaders().addAll(header.getName(), list);
         }
 
         responseContext.setEntityStream(new ByteBufferBackedInputStream(content));
