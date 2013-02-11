@@ -122,7 +122,7 @@ Client-side Logging
 TODO
 ----
 
-- [ ] Follow redirects does not work
-- [ ] Support Read timeout/connect timeout
-- [ ] SSL client support
-- [ ] Add more tests
+* Follow redirects does not work
+* Support Read timeout/connect timeout
+* SSL client support
+* Add more tests
