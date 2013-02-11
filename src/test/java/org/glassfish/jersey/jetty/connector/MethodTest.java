@@ -44,6 +44,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.client.ClientException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
@@ -156,4 +157,10 @@ public class MethodTest extends JerseyTest {
         Response response = target(PATH).request().async().delete().get();
         assertEquals("DELETE", response.readEntity(String.class));
     }
+
+    @Test(expected = ClientException.class)
+    public void testPatch() {
+        target(PATH).request().method("PATCH");
+    }
+
 }

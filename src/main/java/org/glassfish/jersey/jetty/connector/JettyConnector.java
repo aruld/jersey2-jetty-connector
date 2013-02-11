@@ -210,49 +210,50 @@ public class JettyConnector extends RequestWriter implements Connector {
     }
 
     private Request translate(final ClientRequest clientRequest) {
-        final String strMethod = clientRequest.getMethod();
+        final HttpMethod method = HttpMethod.fromString(clientRequest.getMethod());
+        if (method == null) {
+            throw new ClientException("Method " + clientRequest.getMethod() + " not supported.");
+        }
         final URI uri = clientRequest.getUri();
-        final Request request;
+        Request request = null;
 
-        switch (strMethod) {
-            case "GET":
+        switch (method) {
+            case GET:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.GET);
                 break;
-            case "POST":
+            case POST:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.POST);
                 break;
-            case "PUT":
+            case PUT:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.PUT);
                 break;
-            case "DELETE":
+            case DELETE:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.DELETE);
                 break;
-            case "HEAD":
+            case HEAD:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.HEAD);
                 break;
-            case "OPTIONS":
+            case OPTIONS:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.OPTIONS);
                 break;
-            case "TRACE":
+            case TRACE:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.TRACE);
                 break;
-            case "CONNECT":
+            case CONNECT:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.CONNECT);
                 break;
-            case "MOVE":
+            case MOVE:
                 request = client.newRequest(uri);
                 request.method(HttpMethod.MOVE);
                 break;
-            default:
-                throw new ClientException("Method " + strMethod + " not supported.");
         }
 
         request.followRedirects(PropertiesHelper.getValue(clientRequest.getConfiguration().getProperties(), ClientProperties.FOLLOW_REDIRECTS, true));
