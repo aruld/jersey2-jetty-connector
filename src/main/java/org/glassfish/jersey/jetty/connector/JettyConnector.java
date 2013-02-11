@@ -57,11 +57,11 @@ import org.glassfish.jersey.client.RequestWriter;
 import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
 import org.glassfish.jersey.client.spi.Connector;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.glassfish.jersey.message.internal.Statuses;
 
 import javax.ws.rs.client.ClientException;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.CookieStore;
 import java.net.URI;
@@ -159,22 +159,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         final Request request = translate(clientRequest);
         try {
             final ContentResponse response = request.send();
-            final ClientResponse responseContext = new ClientResponse(new Response.StatusType() {
-                @Override
-                public int getStatusCode() {
-                    return response.getStatus();
-                }
-
-                @Override
-                public Response.Status.Family getFamily() {
-                    return Response.Status.Family.familyOf(response.getStatus());
-                }
-
-                @Override
-                public String getReasonPhrase() {
-                    return response.getReason();
-                }
-            }, clientRequest);
+            final ClientResponse responseContext = new ClientResponse(Statuses.from(response.getStatus()), clientRequest);
 
             final HttpFields respHeaders = response.getHeaders();
             final Iterator<HttpField> itr = respHeaders.iterator();
@@ -366,22 +351,7 @@ public class JettyConnector extends RequestWriter implements Connector {
     }
 
     private ClientResponse translate(ClientRequest requestContext, final org.eclipse.jetty.client.api.Response original, ByteBuffer content) {
-        final ClientResponse responseContext = new ClientResponse(new Response.StatusType() {
-            @Override
-            public int getStatusCode() {
-                return original.getStatus();
-            }
-
-            @Override
-            public Response.Status.Family getFamily() {
-                return Response.Status.Family.familyOf(original.getStatus());
-            }
-
-            @Override
-            public String getReasonPhrase() {
-                return original.getReason();
-            }
-        }, requestContext);
+        final ClientResponse responseContext = new ClientResponse(Statuses.from(original.getStatus()), requestContext);
 
         Iterator<HttpField> itr = original.getHeaders().iterator();
         while (itr.hasNext()) {
