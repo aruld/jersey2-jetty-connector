@@ -50,10 +50,8 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.Jetty;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.ClientRequest;
-import org.glassfish.jersey.client.ClientResponse;
-import org.glassfish.jersey.client.RequestWriter;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.glassfish.jersey.client.*;
 import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
 import org.glassfish.jersey.client.spi.Connector;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
@@ -93,7 +91,18 @@ public class JettyConnector extends RequestWriter implements Connector {
      * @param config client configuration.
      */
     public JettyConnector(Configuration config) {
-        this.client = new HttpClient();
+        SslConfig sslConfig = null;
+        if (config != null) {
+            sslConfig = PropertiesHelper.getValue(config.getProperties(), ClientProperties.SSL_CONFIG, SslConfig.class);
+        }
+        if (sslConfig != null) {
+            final SslContextFactory sslContextFactory = new SslContextFactory();
+            sslContextFactory.setSslContext(sslConfig.getSSLContext());
+            this.client = new HttpClient(sslContextFactory);
+        } else {
+            this.client = new HttpClient();
+        }
+
         if (config != null) {
             Boolean disableCookies = (Boolean) config.getProperties().get(JettyClientProperties.DISABLE_COOKIES);
             disableCookies = (disableCookies != null) ? disableCookies : false;
@@ -220,39 +229,39 @@ public class JettyConnector extends RequestWriter implements Connector {
         switch (method) {
             case GET:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.GET);
+                request.method(method);
                 break;
             case POST:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.POST);
+                request.method(method);
                 break;
             case PUT:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.PUT);
+                request.method(method);
                 break;
             case DELETE:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.DELETE);
+                request.method(method);
                 break;
             case HEAD:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.HEAD);
+                request.method(method);
                 break;
             case OPTIONS:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.OPTIONS);
+                request.method(method);
                 break;
             case TRACE:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.TRACE);
+                request.method(method);
                 break;
             case CONNECT:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.CONNECT);
+                request.method(method);
                 break;
             case MOVE:
                 request = client.newRequest(uri);
-                request.method(HttpMethod.MOVE);
+                request.method(method);
                 break;
         }
 

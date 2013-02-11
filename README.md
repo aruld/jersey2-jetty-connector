@@ -125,5 +125,5 @@ TODO
 
 * Follow redirects does not work
 * Support Read timeout/connect timeout
-* SSL client support
+* SSL testing
 * Add more tests
