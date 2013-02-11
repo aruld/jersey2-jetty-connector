@@ -8,6 +8,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -29,7 +31,8 @@ public class AppClient {
         String entity = response.readEntity(String.class);
         System.out.println(entity);
 
-        response = target.path(AppMain.PATH).request().async().get().get();
+        Future<Response> future = target.path(AppMain.PATH).request().async().get();
+        response = future.get(3, TimeUnit.SECONDS);
         entity = response.readEntity(String.class);
         System.out.println(entity);
 

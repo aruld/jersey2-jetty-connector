@@ -25,6 +25,11 @@ public class AppMain {
     public static class HttpMethodResource {
         @GET
         public String get() {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return "GET";
         }
 
