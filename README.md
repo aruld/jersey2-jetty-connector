@@ -1,7 +1,7 @@
 Jersey 2 JAX-RS Client Connector for Jetty
 ===============================
 
-Implemented based on Jersey 2 m12 release. It supports both synchronous and asynchronous client implementation.
+Implemented based on Jersey 2 m12 release. It supports both synchronous and asynchronous client invocation.
 
 It supports cookie handling, basic authentication and proxy servers.
 
@@ -10,14 +10,15 @@ Setup
 
 1. git clone https://github.com/aruld/jersey2-jetty-connector.git
 2. mvn package
-3. Include this in your POM.
+3. Include this in your Maven POM.
 
+```xml
     <dependency>
         <groupId>org.glassfish.jersey.connectors</groupId>
         <artifactId>jersey-jetty-connector</artifactId>
         <version>2.0-m12</version>
     </dependency>
-
+```
 
 
 Usage
