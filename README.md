@@ -7,6 +7,11 @@ Implemented based on Jersey 2 m12 release. It supports both synchronous and asyn
 
 It supports cookie handling, basic authentication and proxy servers.
 
+Requirements
+----
+
+The project requires JDK 7, since Jetty 9 required JDK 7.
+
 Setup
 -----
 
