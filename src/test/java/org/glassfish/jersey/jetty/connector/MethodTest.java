@@ -58,7 +58,6 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -67,7 +66,7 @@ import static org.junit.Assert.assertEquals;
  * Tests the Http methods.
  *
  * @author Stepan Kopriva (stepan.kopriva at oracle.com)
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class MethodTest extends JerseyTest {
 

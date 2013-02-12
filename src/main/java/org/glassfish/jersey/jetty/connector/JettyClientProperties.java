@@ -42,7 +42,7 @@ package org.glassfish.jersey.jetty.connector;
 /**
  * Configuration options specific to the Client API that utilizes {@link JettyConnector}.
  *
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class JettyClientProperties {
 
@@ -56,7 +56,7 @@ public class JettyClientProperties {
      */
     @SuppressWarnings("HtmlTagCanBeJavadocTag")
     public static final String DISABLE_COOKIES =
-            "jersey.config.client.disableCookies";
+            "jersey.config.jetty.client.disableCookies";
 
     /**
      * The credential provider that should be used to retrieve
@@ -69,7 +69,7 @@ public class JettyClientProperties {
      */
     @SuppressWarnings("HtmlTagCanBeJavadocTag")
     public static final String BASIC_AUTH =
-            "jersey.config.client.basicAuth";
+            "jersey.config.jetty.client.basicAuth";
 
     /**
      * A value of a URI to configure the proxy host and proxy port to proxy
@@ -81,7 +81,7 @@ public class JettyClientProperties {
      */
     @SuppressWarnings("HtmlTagCanBeJavadocTag")
     public static final String PROXY_URI =
-            "jersey.config.client.proxyURI";
+            "jersey.config.jetty.client.proxyURI";
 
     /**
      * User name which will be used for proxy authentication.
@@ -91,7 +91,7 @@ public class JettyClientProperties {
      */
     @SuppressWarnings("HtmlTagCanBeJavadocTag")
     public static final String PROXY_USERNAME =
-            "jersey.config.client.proxyUsername";
+            "jersey.config.jetty.client.proxyUsername";
 
     /**
      * Password which will be used for proxy authentication.
@@ -101,6 +101,6 @@ public class JettyClientProperties {
      */
     @SuppressWarnings("HtmlTagCanBeJavadocTag")
     public static final String PROXY_PASSWORD =
-            "jersey.config.client.proxyPassword";
+            "jersey.config.jetty.client.proxyPassword";
 
 }

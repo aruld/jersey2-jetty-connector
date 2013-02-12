@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 
 /**
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class AppClient {
     private static final Logger LOGGER = Logger.getLogger(AppClient.class.getName());

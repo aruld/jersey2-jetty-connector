@@ -58,7 +58,7 @@ import static org.junit.Assert.*;
 
 /**
  * @author Paul Sandoz (paul.sandoz at oracle.com)
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class CookieTest extends JerseyTest {
 

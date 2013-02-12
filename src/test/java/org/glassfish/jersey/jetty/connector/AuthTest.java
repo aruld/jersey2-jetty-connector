@@ -60,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Paul Sandoz (paul.sandoz at oracle.com)
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class AuthTest extends JerseyTest {
 

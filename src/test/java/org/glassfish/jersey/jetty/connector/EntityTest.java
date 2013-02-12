@@ -65,7 +65,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the Http content negotiation.
  *
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class EntityTest extends JerseyTest {
 

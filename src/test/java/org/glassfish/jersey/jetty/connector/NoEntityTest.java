@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 
 /**
  * @author Paul Sandoz (paul.sandoz at oracle.com)
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class NoEntityTest extends JerseyTest {
     private static final Logger LOGGER = Logger.getLogger(NoEntityTest.class.getName());

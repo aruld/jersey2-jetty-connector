@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,61 +39,55 @@
  */
 package org.glassfish.jersey.jetty.connector;
 
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
-import org.junit.Test;
+import java.io.IOException;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-import java.util.logging.Logger;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientResponseContext;
+import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Paul Sandoz (paul.sandoz at oracle.com)
- * @author Arul Dhesiaseelan (aruld at acm.org)
+ * Custom logging filter.
+ *
+ * @author Santiago Pericas-Geertsen (santiago.pericasgeertsen at oracle.com)
  */
-public class AuthFilterTest extends JerseyTest {
+public class CustomLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter,
+        ClientRequestFilter, ClientResponseFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(AuthFilterTest.class.getName());
-
-    @Override
-    protected Application configure() {
-        ResourceConfig config = new ResourceConfig(AuthTest.AuthResource.class);
-        config.register(new LoggingFilter(LOGGER, true));
-        return config;
-    }
-
+    static int preFilterCalled = 0;
+    static int postFilterCalled = 0;
 
     @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.connector(new JettyConnector(clientConfig));
+    public void filter(ClientRequestContext context) throws IOException {
+        System.out.println("CustomLoggingFilter.preFilter called");
+        assertEquals(context.getConfiguration().getProperty("foo"), "bar");
+        preFilterCalled++;
     }
 
-    @Test
-    public void testAuthGetWithClientFilter() {
-        client().register(new HttpBasicAuthFilter("name", "password"));
-        Response response = target("test/filter").request().get();
-        assertEquals("GET", response.readEntity(String.class));
+    @Override
+    public void filter(ClientRequestContext context, ClientResponseContext clientResponseContext) throws IOException {
+        System.out.println("CustomLoggingFilter.postFilter called");
+        assertEquals(context.getConfiguration().getProperty("foo"), "bar");
+        postFilterCalled++;
     }
 
-    @Test
-    public void testAuthPostWithClientFilter() {
-        client().register(new HttpBasicAuthFilter("name", "password"));
-        Response response = target("test/filter").request().post(Entity.text("POST"));
-        assertEquals("POST", response.readEntity(String.class));
+    @Override
+    public void filter(ContainerRequestContext context) throws IOException {
+        System.out.println("CustomLoggingFilter.preFilter called");
+        assertEquals(context.getProperty("foo"), "bar");
+        preFilterCalled++;
     }
 
-
-    @Test
-    public void testAuthDeleteWithClientFilter() {
-        client().register(new HttpBasicAuthFilter("name", "password"));
-        Response response = target("test/filter").request().delete();
-        assertEquals(204, response.getStatus());
+    @Override
+    public void filter(ContainerRequestContext context, ContainerResponseContext containerResponseContext) throws IOException {
+        System.out.println("CustomLoggingFilter.postFilter called");
+        assertEquals(context.getProperty("foo"), "bar");
+        postFilterCalled++;
     }
-
 }

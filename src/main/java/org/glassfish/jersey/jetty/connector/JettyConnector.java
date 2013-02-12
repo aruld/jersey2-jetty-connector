@@ -51,6 +51,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.client.*;
 import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
 import org.glassfish.jersey.client.spi.Connector;
@@ -75,8 +76,20 @@ import java.util.logging.Logger;
 /**
  * A {@link Connector} that utilizes the Jetty HTTP Client to send and receive
  * HTTP request and responses.
+ * <p/>
+ * The following properties are only supported at construction of this class:
+ * <ul>
+ * <li>{@link ClientProperties#SSL_CONFIG}</li>
+ * <li>{@link ClientProperties#ASYNC_THREADPOOL_SIZE}</li>
+ * <li>{@link JettyClientProperties#BASIC_AUTH}</li>
+ * <li>{@link JettyClientProperties#DISABLE_COOKIES}</li>
+ * <li>{@link JettyClientProperties#PROXY_URI}</li>
+ * <li>{@link JettyClientProperties#PROXY_USERNAME}</li>
+ * <li>{@link JettyClientProperties#PROXY_PASSWORD}</li>
+ * </ul>
+ * <p/>
  *
- * @author Arul Dhesiaseelan (aruld@acm.org)
+ * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class JettyConnector extends RequestWriter implements Connector {
 
@@ -104,6 +117,13 @@ public class JettyConnector extends RequestWriter implements Connector {
         }
 
         if (config != null) {
+            final Object threadPoolSize = config.getProperties().get(ClientProperties.ASYNC_THREADPOOL_SIZE);
+            if (threadPoolSize != null && threadPoolSize instanceof Integer && (Integer) threadPoolSize > 0) {
+                final String name = HttpClient.class.getSimpleName() + "@" + hashCode();
+                final QueuedThreadPool threadPool = new QueuedThreadPool((Integer) threadPoolSize);
+                threadPool.setName(name);
+                client.setExecutor(threadPool);
+            }
             Boolean disableCookies = (Boolean) config.getProperties().get(JettyClientProperties.DISABLE_COOKIES);
             disableCookies = (disableCookies != null) ? disableCookies : false;
 
@@ -138,8 +158,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         } else if (proxy instanceof String) {
             return URI.create((String) proxy);
         } else {
-            throw new ClientException("The proxy URI (" + JettyClientProperties.PROXY_URI +
-                    ") property MUST be an instance of String or URI");
+            throw new ClientException(LocalizationMessages.WRONG_PROXY_URI_TYPE(JettyClientProperties.PROXY_URI));
         }
     }
 
@@ -157,7 +176,7 @@ public class JettyConnector extends RequestWriter implements Connector {
      * Get the {@link CookieStore}.
      *
      * @return the {@link CookieStore} instance or null when
-     *         ClientProperties.DISABLE_COOKIES set to true.
+     *         JettyClientProperties.DISABLE_COOKIES set to true.
      */
     public CookieStore getCookieStore() {
         return cookieStore;
@@ -221,7 +240,7 @@ public class JettyConnector extends RequestWriter implements Connector {
     private Request translate(final ClientRequest clientRequest) {
         final HttpMethod method = HttpMethod.fromString(clientRequest.getMethod());
         if (method == null) {
-            throw new ClientException("Method " + clientRequest.getMethod() + " not supported.");
+            throw new ClientException(LocalizationMessages.METHOD_NOT_SUPPORTED(clientRequest.getMethod()));
         }
         final URI uri = clientRequest.getUri();
         Request request = null;
