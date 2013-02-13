@@ -195,7 +195,7 @@ public class JettyConnector extends RequestWriter implements Connector {
                 HttpField header = itr.next();
                 List<String> list = responseContext.getHeaders().get(header.getName());
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = new ArrayList<String>();
                 }
                 list.add(header.getValue());
                 responseContext.getHeaders().addAll(header.getName(), list);
@@ -387,7 +387,7 @@ public class JettyConnector extends RequestWriter implements Connector {
             HttpField header = itr.next();
             List<String> list = responseContext.getHeaders().get(header.getName());
             if (list == null) {
-                list = new ArrayList<>();
+                list = new ArrayList<String>();
             }
             list.add(header.getValue());
             responseContext.getHeaders().addAll(header.getName(), list);
