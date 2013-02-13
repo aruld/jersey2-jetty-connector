@@ -51,7 +51,7 @@
     <!--</parent>-->
     <groupId>org.glassfish.jersey.connectors</groupId>
     <artifactId>jersey-jetty-connector</artifactId>
-    <version>2.0-m12</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>jersey-connectors-jetty</name>
 
@@ -60,6 +60,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jetty.version>9.0.0.RC0</jetty.version>
+        <jersey.version>2.0-m12</jersey.version>
     </properties>
 
     <licenses>
@@ -80,28 +81,28 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
-            <version>${project.version}</version>
+            <version>${jersey.version}</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>${project.version}</version>
+            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${project.version}</version>
+            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${project.version}</version>
+            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -197,5 +198,37 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>buildhive</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.0</version>
+                        <configuration>
+                            <source>1.7</source>
+                            <target>1.7</target>
+                            <showDeprecation>true</showDeprecation>
+                            <showWarnings>true</showWarnings>
+                            <encoding>UTF-8</encoding>
+                            <executable>/opt/jdk/jdk1.7.0/bin/javac</executable>
+                            <fork>true</fork>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <jvm>/opt/jdk/jdk1.7.0/bin/java</jvm>
+                            <forkMode>once</forkMode>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
