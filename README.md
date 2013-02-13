@@ -19,6 +19,7 @@ The project requires JDK 7, since Jetty 9 required JDK 7.
 Setup
 -----
 
+0. Non-maven projects can download the snapshot jar from [buildhive](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/lastSuccessfulBuild/artifact/).
 1. git clone https://github.com/aruld/jersey2-jetty-connector.git
 2. mvn package
 3. Include this in your Maven POM.
@@ -30,7 +31,6 @@ Setup
         <version>2.0-m12</version>
     </dependency>
 ```
-4. Non-maven projects can download the jar from [buildhive](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/lastSuccessfulBuild/artifact/)
 
 
 Usage
