@@ -48,7 +48,7 @@ import org.junit.Test;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
 
@@ -85,7 +85,7 @@ public class CookieTest extends JerseyTest {
     @Test
     public void testCookieResource() {
         ClientConfig cc = new ClientConfig();
-        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
         WebTarget r = client.target(getBaseUri());
 
 
@@ -96,8 +96,8 @@ public class CookieTest extends JerseyTest {
     @Test
     public void testDisabledCookies() {
         ClientConfig cc = new ClientConfig();
-        cc.setProperty(JettyClientProperties.DISABLE_COOKIES, true);
-        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        cc.property(JettyClientProperties.DISABLE_COOKIES, true);
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
         WebTarget r = client.target(getBaseUri());
 
         assertEquals("NO-COOKIE", r.request().get(String.class));
@@ -113,7 +113,7 @@ public class CookieTest extends JerseyTest {
     @Test
     public void testCookies() {
         ClientConfig cc = new ClientConfig();
-        Client client = ClientFactory.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
         WebTarget r = client.target(getBaseUri());
 
         assertEquals("NO-COOKIE", r.request().get(String.class));

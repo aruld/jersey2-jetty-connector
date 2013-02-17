@@ -45,6 +45,8 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.client.util.OutputStreamContentProvider;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
@@ -58,13 +60,12 @@ import org.glassfish.jersey.client.spi.Connector;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.message.internal.Statuses;
 
-import javax.ws.rs.client.ClientException;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.net.CookieStore;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -147,7 +148,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         try {
             client.start();
         } catch (Exception e) {
-            throw new ClientException("Failed to start the client.", e);
+            throw new ProcessingException("Failed to start the client.", e);
         }
         this.cookieStore = client.getCookieStore();
     }
@@ -158,7 +159,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         } else if (proxy instanceof String) {
             return URI.create((String) proxy);
         } else {
-            throw new ClientException(LocalizationMessages.WRONG_PROXY_URI_TYPE(JettyClientProperties.PROXY_URI));
+            throw new ProcessingException(LocalizationMessages.WRONG_PROXY_URI_TYPE(JettyClientProperties.PROXY_URI));
         }
     }
 
@@ -183,8 +184,13 @@ public class JettyConnector extends RequestWriter implements Connector {
     }
 
     @Override
-    public ClientResponse apply(final ClientRequest clientRequest) throws ClientException {
-        final Request request = translate(clientRequest);
+    public ClientResponse apply(final ClientRequest clientRequest) throws ProcessingException {
+        final Request request = translateRequest(clientRequest);
+        final ContentProvider entity = getBytesProvider(clientRequest);
+        if (entity != null) {
+            request.content(entity);
+        }
+
         try {
             final ContentResponse response = request.send();
             final ClientResponse responseContext = new ClientResponse(Statuses.from(response.getStatus()), clientRequest);
@@ -216,7 +222,7 @@ public class JettyConnector extends RequestWriter implements Connector {
 
 
         } catch (Exception e) {
-            throw new ClientException(e);
+            throw new ProcessingException(e);
         }
 
     }
@@ -237,10 +243,10 @@ public class JettyConnector extends RequestWriter implements Connector {
         return new ByteArrayInputStream(response.getContent());
     }
 
-    private Request translate(final ClientRequest clientRequest) {
+    private Request translateRequest(final ClientRequest clientRequest) {
         final HttpMethod method = HttpMethod.fromString(clientRequest.getMethod());
         if (method == null) {
-            throw new ClientException(LocalizationMessages.METHOD_NOT_SUPPORTED(clientRequest.getMethod()));
+            throw new ProcessingException(LocalizationMessages.METHOD_NOT_SUPPORTED(clientRequest.getMethod()));
         }
         final URI uri = clientRequest.getUri();
         Request request = null;
@@ -285,11 +291,6 @@ public class JettyConnector extends RequestWriter implements Connector {
         }
 
         request.followRedirects(PropertiesHelper.getValue(clientRequest.getConfiguration().getProperties(), ClientProperties.FOLLOW_REDIRECTS, true));
-
-        final ContentProvider entity = getHttpEntity(clientRequest);
-        if (entity != null) {
-            request.content(entity);
-        }
         writeOutBoundHeaders(clientRequest.getHeaders(), request);
         return request;
     }
@@ -312,52 +313,67 @@ public class JettyConnector extends RequestWriter implements Connector {
         }
     }
 
-    private ContentProvider getHttpEntity(final ClientRequest requestContext) {
+    private ContentProvider getBytesProvider(final ClientRequest requestContext) {
         final Object entity = requestContext.getEntity();
 
         if (entity == null) {
             return null;
         }
 
-        //TODO: Jetty content provider output stream support?
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             final RequestEntityWriter rew = this.getRequestEntityWriter(requestContext);
             rew.writeRequestEntity(outputStream);
         } catch (IOException e) {
-            throw new ClientException("Failed to write request entity.", e);
+            throw new ProcessingException("Failed to write request entity.", e);
         }
         return new BytesContentProvider(outputStream.toByteArray());
     }
 
+    private ContentProvider getStreamProvider(final ClientRequest requestContext) {
+        final Object entity = requestContext.getEntity();
+
+        if (entity == null) {
+            return null;
+        }
+
+        OutputStreamContentProvider streamContentProvider = new OutputStreamContentProvider();
+        try {
+            final RequestEntityWriter rew = this.getRequestEntityWriter(requestContext);
+            rew.writeRequestEntity(streamContentProvider.getOutputStream());
+        } catch (IOException e) {
+            throw new ProcessingException("Failed to write request entity.", e);
+        }
+        return streamContentProvider;
+    }
+
     @Override
     public Future<?> apply(final ClientRequest request, final AsyncConnectorCallback callback) {
-        final Request connectorRequest = translate(request);
+        final Request connectorRequest = translateRequest(request);
+        final ContentProvider entity = getStreamProvider(request);
+        if (entity != null) {
+            connectorRequest.content(entity);
+        }
+
         final Throwable[] failure = new Throwable[1];
-        final org.eclipse.jetty.client.api.Response[] futureResponse = new org.eclipse.jetty.client.api.Response[1];
+        final ClientResponse[] response = new ClientResponse[1];
+        final InputStreamResponseListener responseListener = new InputStreamResponseListener();
         try {
-            buildAsyncRequest(connectorRequest).onResponseContent(new org.eclipse.jetty.client.api.Response.ContentListener() {
-                @Override
-                public void onContent(org.eclipse.jetty.client.api.Response connectorResponse, ByteBuffer content) {
-                    final ClientResponse response = translate(request, connectorResponse, content);
-                    callback.response(response);
-                    futureResponse[0] = connectorResponse;
-                }
-
-            }).onResponseFailure(new org.eclipse.jetty.client.api.Response.FailureListener() {
-                @Override
-                public void onFailure(org.eclipse.jetty.client.api.Response response, Throwable ex) {
-                    failure[0] = ex;
-                }
-            }).send(new org.eclipse.jetty.client.api.Response.CompleteListener() {
-                @Override
-                public void onComplete(Result connectorResponse) {
-                    failure[0] = connectorResponse.getFailure();
-                }
-
-            });
-            //TODO: Is there a better approach to return a response future?
-            return Futures.immediateFuture(futureResponse);
+            buildAsyncRequest(connectorRequest)
+                    .onResponseHeaders(new org.eclipse.jetty.client.api.Response.HeadersListener() {
+                        @Override
+                        public void onHeaders(Response connectorResponse) {
+                            response[0] = translateResponse(request, connectorResponse, responseListener);
+                            callback.response(response[0]);
+                        }
+                    })
+                    .onResponseFailure(new org.eclipse.jetty.client.api.Response.FailureListener() {
+                        @Override
+                        public void onFailure(org.eclipse.jetty.client.api.Response response, Throwable ex) {
+                            failure[0] = ex;
+                        }
+                    }).send(responseListener);
+            return Futures.immediateFuture(response[0]);
         } catch (Throwable t) {
             failure[0] = t;
             callback.failure(t);
@@ -379,7 +395,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         return request;
     }
 
-    private ClientResponse translate(ClientRequest requestContext, final org.eclipse.jetty.client.api.Response original, ByteBuffer content) {
+    private ClientResponse translateResponse(ClientRequest requestContext, final org.eclipse.jetty.client.api.Response original, final InputStreamResponseListener contentListener) {
         final ClientResponse responseContext = new ClientResponse(Statuses.from(original.getStatus()), requestContext);
 
         Iterator<HttpField> itr = original.getHeaders().iterator();
@@ -393,37 +409,10 @@ public class JettyConnector extends RequestWriter implements Connector {
             responseContext.getHeaders().addAll(header.getName(), list);
         }
 
-        responseContext.setEntityStream(new ByteBufferBackedInputStream(content));
+        responseContext.setEntityStream(contentListener.getInputStream());
 
         return responseContext;
 
-    }
-
-    private static final class ByteBufferBackedInputStream extends InputStream {
-
-        ByteBuffer buf;
-
-        public ByteBufferBackedInputStream(ByteBuffer buf) {
-            this.buf = buf;
-        }
-
-        public synchronized int read() throws IOException {
-            if (!buf.hasRemaining()) {
-                return -1;
-            }
-            return buf.get() & 0xFF;
-        }
-
-        public synchronized int read(byte[] bytes, int off, int len)
-                throws IOException {
-            if (!buf.hasRemaining()) {
-                return -1;
-            }
-
-            len = Math.min(len, buf.remaining());
-            buf.get(bytes, off, len);
-            return len;
-        }
     }
 
     @Override
@@ -436,7 +425,7 @@ public class JettyConnector extends RequestWriter implements Connector {
         try {
             client.stop();
         } catch (Exception e) {
-            throw new ClientException("Failed to stop the client.", e);
+            throw new ProcessingException("Failed to stop the client.", e);
         }
     }
 }

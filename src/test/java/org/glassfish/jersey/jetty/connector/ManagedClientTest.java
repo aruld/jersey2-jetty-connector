@@ -237,7 +237,7 @@ public class ManagedClientTest extends JerseyTest {
     @Override
     protected Application configure() {
         ResourceConfig config = new ResourceConfig(PublicResource.class, InternalResource.class, CustomHeaderFeature.class)
-                .setProperty(ClientA.class.getName() + ".baseUri", this.getBaseUri().toString() + "internal");
+                .property(ClientA.class.getName() + ".baseUri", this.getBaseUri().toString() + "internal");
         config.register(new LoggingFilter(LOGGER, true));
         return config;
     }

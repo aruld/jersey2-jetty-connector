@@ -43,7 +43,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -219,7 +219,7 @@ public class TraceSupportTest extends JerseyTest {
     }
 
     private Client getJettyClient() {
-        return ClientFactory.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
+        return ClientBuilder.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
     }
 
 

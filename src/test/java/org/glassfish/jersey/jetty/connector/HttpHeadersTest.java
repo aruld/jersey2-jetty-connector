@@ -46,7 +46,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
@@ -94,7 +94,7 @@ public class HttpHeadersTest extends JerseyTest {
     @Test
     public void testPost() {
         final URI u = target().getUri();
-        Client c = ClientFactory.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
+        Client c = ClientBuilder.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
         WebTarget t = c.target(u);
 
         Response response = t.path("test").request().header("X-CLIENT", "client").post(null);

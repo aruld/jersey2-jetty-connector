@@ -50,7 +50,7 @@ import org.junit.Test;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
@@ -104,11 +104,11 @@ public class GZIPContentEncodingTest extends JerseyTest {
     @Test
     public void testPostChunked() {
         ClientConfig cc = new ClientConfig();
-        cc.setProperty(ClientProperties.CHUNKED_ENCODING_SIZE, 1024);
+        cc.property(ClientProperties.CHUNKED_ENCODING_SIZE, 1024);
         cc.connector(new JettyConnector(cc));
         cc.register(new LoggingFilter(LOGGER, true));
 
-        Client client = ClientFactory.newClient(cc);
+        Client client = ClientBuilder.newClient(cc);
         WebTarget r = client.target(getBaseUri());
 
         byte[] content = new byte[1024 * 1024];

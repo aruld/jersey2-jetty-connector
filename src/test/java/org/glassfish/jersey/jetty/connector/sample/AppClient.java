@@ -5,7 +5,7 @@ import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jetty.connector.JettyConnector;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.concurrent.Future;
@@ -24,7 +24,7 @@ public class AppClient {
         cc.connector(new JettyConnector(cc));
         cc.register(new LoggingFilter(LOGGER, true));
 
-        Client client = ClientFactory.newClient(cc);
+        Client client = ClientBuilder.newClient(cc);
         WebTarget target = client.target(AppMain.BASE_URI);
 
         Response response = target.path(AppMain.PATH).request().get();
