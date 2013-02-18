@@ -56,7 +56,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.spi.TestContainer;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.logging.Logger;
@@ -100,7 +99,6 @@ public class FollowRedirectsTest extends JerseyTest {
     }
 
     @Test
-    @Ignore("Throws NPE, need to investigate.")
     public void testDoFollow() {
         Response r = target("test/redirect").request().get();
         assertEquals(200, r.getStatus());

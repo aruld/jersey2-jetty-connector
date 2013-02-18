@@ -10,15 +10,16 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+import java.util.logging.Logger;
 
 /**
  * @author Arul Dhesiaseelan (aruld at acm.org)
  */
 public class AppClient {
+    private static final Logger LOGGER = Logger.getLogger(AppClient.class.getName());
     public static void main(String[] args) throws Exception {
         ClientConfig cc = new ClientConfig();
-        cc.register(new LoggingFilter());
+        cc.register(new LoggingFilter(LOGGER, true));
         cc.connector(new JettyConnector(cc));
 
         Client client = ClientBuilder.newClient(cc);

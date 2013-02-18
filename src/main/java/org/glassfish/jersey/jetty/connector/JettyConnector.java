@@ -45,7 +45,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.OutputStreamContentProvider;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
@@ -66,6 +65,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.net.CookieStore;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -184,41 +184,29 @@ public class JettyConnector extends RequestWriter implements Connector {
     }
 
     @Override
-    public ClientResponse apply(final ClientRequest clientRequest) throws ProcessingException {
-        final Request request = translateRequest(clientRequest);
-        final ContentProvider entity = getBytesProvider(clientRequest);
+    public ClientResponse apply(final ClientRequest jerseyRequest) throws ProcessingException {
+        final Request jettyRequest = translateRequest(jerseyRequest);
+        final ContentProvider entity = getBytesProvider(jerseyRequest);
         if (entity != null) {
-            request.content(entity);
+            jettyRequest.content(entity);
         }
 
         try {
-            final ContentResponse response = request.send();
-            final ClientResponse responseContext = new ClientResponse(Statuses.from(response.getStatus()), clientRequest);
-
-            final HttpFields respHeaders = response.getHeaders();
-            final Iterator<HttpField> itr = respHeaders.iterator();
-            while (itr.hasNext()) {
-                HttpField header = itr.next();
-                List<String> list = responseContext.getHeaders().get(header.getName());
-                if (list == null) {
-                    list = new ArrayList<String>();
-                }
-                list.add(header.getValue());
-                responseContext.getHeaders().addAll(header.getName(), list);
-            }
-
+            final ContentResponse jettyResponse = jettyRequest.send();
+            final ClientResponse jerseyResponse = new ClientResponse(Statuses.from(jettyResponse.getStatus()), jerseyRequest);
+            processResponseHeaders(jettyResponse.getHeaders(), jerseyResponse);
             try {
-                responseContext.setEntityStream(new HttpClientResponseInputStream(response));
+                jerseyResponse.setEntityStream(new HttpClientResponseInputStream(jettyResponse));
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, null, e);
             }
 
-            if (!responseContext.hasEntity()) {
-                responseContext.bufferEntity();
-                responseContext.close();
+            if (!jerseyResponse.hasEntity()) {
+                jerseyResponse.bufferEntity();
+                jerseyResponse.close();
             }
 
-            return responseContext;
+            return jerseyResponse;
 
 
         } catch (Exception e) {
@@ -227,10 +215,24 @@ public class JettyConnector extends RequestWriter implements Connector {
 
     }
 
+    private void processResponseHeaders(final HttpFields headers, final ClientResponse jerseyResponse) {
+        final Iterator<HttpField> itr = headers.iterator();
+        while (itr.hasNext()) {
+            HttpField header = itr.next();
+            List<String> list = jerseyResponse.getHeaders().get(header.getName());
+            if (list == null) {
+                list = new ArrayList<String>();
+            }
+            list.add(header.getValue());
+            jerseyResponse.getHeaders().addAll(header.getName(), list);
+        }
+
+    }
+
     private static final class HttpClientResponseInputStream extends FilterInputStream {
 
-        HttpClientResponseInputStream(final ContentResponse response) throws IOException {
-            super(getInputStream(response));
+        HttpClientResponseInputStream(final ContentResponse jettyResponse) throws IOException {
+            super(getInputStream(jettyResponse));
         }
 
         @Override
@@ -348,23 +350,22 @@ public class JettyConnector extends RequestWriter implements Connector {
     }
 
     @Override
-    public Future<?> apply(final ClientRequest request, final AsyncConnectorCallback callback) {
-        final Request connectorRequest = translateRequest(request);
-        final ContentProvider entity = getStreamProvider(request);
+    public Future<?> apply(final ClientRequest jerseyRequest, final AsyncConnectorCallback callback) {
+        final Request jettyRequest = translateRequest(jerseyRequest);
+        final ContentProvider entity = getStreamProvider(jerseyRequest);
         if (entity != null) {
-            connectorRequest.content(entity);
+            jettyRequest.content(entity);
         }
 
         final Throwable[] failure = new Throwable[1];
-        final ClientResponse[] response = new ClientResponse[1];
-        final InputStreamResponseListener responseListener = new InputStreamResponseListener();
+        final ClientResponse[] jerseyResponse = new ClientResponse[1];
         try {
-            buildAsyncRequest(connectorRequest)
-                    .onResponseHeaders(new org.eclipse.jetty.client.api.Response.HeadersListener() {
+            buildAsyncRequest(jettyRequest)
+                    .onResponseContent(new Response.ContentListener() {
                         @Override
-                        public void onHeaders(Response connectorResponse) {
-                            response[0] = translateResponse(request, connectorResponse, responseListener);
-                            callback.response(response[0]);
+                        public void onContent(Response jettyResponse, ByteBuffer content) {
+                            jerseyResponse[0] = translateResponse(jerseyRequest, jettyResponse, content);
+                            callback.response(jerseyResponse[0]);
                         }
                     })
                     .onResponseFailure(new org.eclipse.jetty.client.api.Response.FailureListener() {
@@ -372,8 +373,14 @@ public class JettyConnector extends RequestWriter implements Connector {
                         public void onFailure(org.eclipse.jetty.client.api.Response response, Throwable ex) {
                             failure[0] = ex;
                         }
-                    }).send(responseListener);
-            return Futures.immediateFuture(response[0]);
+                    })
+                    .send(new org.eclipse.jetty.client.api.Response.CompleteListener() {
+                        @Override
+                        public void onComplete(Result jettyResult) {
+                            failure[0] = jettyResult.getFailure();
+                        }
+                    });
+            return Futures.immediateFuture(jerseyResponse[0]);
         } catch (Throwable t) {
             failure[0] = t;
             callback.failure(t);
@@ -385,9 +392,9 @@ public class JettyConnector extends RequestWriter implements Connector {
 
     }
 
-    private Request buildAsyncRequest(final Request connectorRequest) {
-        final Request request = client.newRequest(connectorRequest.getURI()).method(connectorRequest.getMethod()).content(connectorRequest.getContent()).followRedirects(connectorRequest.isFollowRedirects());
-        Iterator<HttpField> itr = connectorRequest.getHeaders().iterator();
+    private Request buildAsyncRequest(final Request jettyRequest) {
+        final Request request = client.newRequest(jettyRequest.getURI()).method(jettyRequest.getMethod()).content(jettyRequest.getContent()).followRedirects(jettyRequest.isFollowRedirects());
+        Iterator<HttpField> itr = jettyRequest.getHeaders().iterator();
         while (itr.hasNext()) {
             HttpField header = itr.next();
             request.getHeaders().add(header.getName(), header.getValue());
@@ -395,24 +402,40 @@ public class JettyConnector extends RequestWriter implements Connector {
         return request;
     }
 
-    private ClientResponse translateResponse(ClientRequest requestContext, final org.eclipse.jetty.client.api.Response original, final InputStreamResponseListener contentListener) {
-        final ClientResponse responseContext = new ClientResponse(Statuses.from(original.getStatus()), requestContext);
+    private ClientResponse translateResponse(final ClientRequest jerseyRequest, final org.eclipse.jetty.client.api.Response jettyResponse, final ByteBuffer content) {
+        final ClientResponse jerseyResponse = new ClientResponse(Statuses.from(jettyResponse.getStatus()), jerseyRequest);
+        processResponseHeaders(jettyResponse.getHeaders(), jerseyResponse);
+        jerseyResponse.setEntityStream(new ByteBufferBackedInputStream(content));
 
-        Iterator<HttpField> itr = original.getHeaders().iterator();
-        while (itr.hasNext()) {
-            HttpField header = itr.next();
-            List<String> list = responseContext.getHeaders().get(header.getName());
-            if (list == null) {
-                list = new ArrayList<String>();
-            }
-            list.add(header.getValue());
-            responseContext.getHeaders().addAll(header.getName(), list);
+        return jerseyResponse;
+
+    }
+
+    private static final class ByteBufferBackedInputStream extends InputStream {
+
+        ByteBuffer buf;
+
+        public ByteBufferBackedInputStream(ByteBuffer buf) {
+            this.buf = buf;
         }
 
-        responseContext.setEntityStream(contentListener.getInputStream());
+        public synchronized int read() throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
+            return buf.get() & 0xFF;
+        }
 
-        return responseContext;
+        public synchronized int read(byte[] bytes, int off, int len)
+                throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
 
+            len = Math.min(len, buf.remaining());
+            buf.get(bytes, off, len);
+            return len;
+        }
     }
 
     @Override

@@ -121,9 +121,7 @@ Client-side Logging
 TODO
 ----
 
-* Follow redirects does not work
 * Support Read timeout/connect timeout
-* AppClient sample takes longer to shutdown
-* Using entity enabled LoggingFilter does not work in AppClient sample
+* AppClient sample takes longer to shutdown async client (Jersey bug?)
 * SSL testing
 * Add more tests
