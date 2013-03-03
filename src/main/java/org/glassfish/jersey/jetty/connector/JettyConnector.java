@@ -361,23 +361,18 @@ public class JettyConnector extends RequestWriter implements Connector {
         final ClientResponse[] jerseyResponse = new ClientResponse[1];
         try {
             buildAsyncRequest(jettyRequest)
-                    .onResponseContent(new Response.ContentListener() {
+                    .send(new Response.Listener.Empty() {
+
                         @Override
                         public void onContent(Response jettyResponse, ByteBuffer content) {
                             jerseyResponse[0] = translateResponse(jerseyRequest, jettyResponse, content);
                             callback.response(jerseyResponse[0]);
                         }
-                    })
-                    .onResponseFailure(new org.eclipse.jetty.client.api.Response.FailureListener() {
+
                         @Override
-                        public void onFailure(org.eclipse.jetty.client.api.Response response, Throwable ex) {
-                            failure[0] = ex;
-                        }
-                    })
-                    .send(new org.eclipse.jetty.client.api.Response.CompleteListener() {
-                        @Override
-                        public void onComplete(Result jettyResult) {
-                            failure[0] = jettyResult.getFailure();
+                        public void onFailure(Response response, Throwable t) {
+                            failure[0] = t;
+                            callback.failure(t);
                         }
                     });
             return Futures.immediateFuture(jerseyResponse[0]);

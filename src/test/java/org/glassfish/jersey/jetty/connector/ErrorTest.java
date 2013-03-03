@@ -117,4 +117,30 @@ public class ErrorTest extends JerseyTest {
             }
         }
     }
+
+    @Test
+    public void testPostErrorAsync() {
+        WebTarget r = target("test");
+
+        for (int i = 0; i < 100; i++) {
+            try {
+                r.request().async().post(Entity.text("POST"));
+            } catch (ClientErrorException ex) {
+            }
+        }
+    }
+
+    @Test
+    public void testPostErrorWithEntityAsync() {
+        WebTarget r = target("test");
+
+        for (int i = 0; i < 100; i++) {
+            try {
+                r.request().async().post(Entity.text("POST"));
+            } catch (ClientErrorException ex) {
+                String s = ex.getResponse().readEntity(String.class);
+                assertEquals("error", s);
+            }
+        }
+    }
 }
