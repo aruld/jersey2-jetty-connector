@@ -123,5 +123,5 @@ TODO
 
 * Support Read timeout/connect timeout
 * AppClient sample takes longer to shutdown async client (Jersey bug?)
-* SSL testing
+* SSL support
 * Add more tests

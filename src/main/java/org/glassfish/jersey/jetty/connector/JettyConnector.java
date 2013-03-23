@@ -53,10 +53,12 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.client.*;
 import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
 import org.glassfish.jersey.client.spi.Connector;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.glassfish.jersey.message.internal.OutboundMessageContext;
 import org.glassfish.jersey.message.internal.Statuses;
 
 import javax.ws.rs.ProcessingException;
@@ -80,8 +82,8 @@ import java.util.logging.Logger;
  * <p/>
  * The following properties are only supported at construction of this class:
  * <ul>
- * <li>{@link ClientProperties#SSL_CONFIG}</li>
  * <li>{@link ClientProperties#ASYNC_THREADPOOL_SIZE}</li>
+ * <li>{@link JettyClientProperties#SSL_CONFIG}</li>
  * <li>{@link JettyClientProperties#BASIC_AUTH}</li>
  * <li>{@link JettyClientProperties#DISABLE_COOKIES}</li>
  * <li>{@link JettyClientProperties#PROXY_URI}</li>
@@ -92,7 +94,7 @@ import java.util.logging.Logger;
  *
  * @author Arul Dhesiaseelan (aruld at acm.org)
  */
-public class JettyConnector extends RequestWriter implements Connector {
+public class JettyConnector implements Connector {
 
     private static final Logger LOGGER = Logger.getLogger(JettyConnector.class.getName());
 
@@ -105,13 +107,13 @@ public class JettyConnector extends RequestWriter implements Connector {
      * @param config client configuration.
      */
     public JettyConnector(Configuration config) {
-        SslConfig sslConfig = null;
+        SslConfigurator sslConfig = null;
         if (config != null) {
-            sslConfig = PropertiesHelper.getValue(config.getProperties(), ClientProperties.SSL_CONFIG, SslConfig.class);
+            sslConfig = PropertiesHelper.getValue(config.getProperties(), JettyClientProperties.SSL_CONFIG, SslConfigurator.class);
         }
         if (sslConfig != null) {
             final SslContextFactory sslContextFactory = new SslContextFactory();
-            sslContextFactory.setSslContext(sslConfig.getSSLContext());
+            sslContextFactory.setSslContext(sslConfig.createSSLContext());
             this.client = new HttpClient(sslContextFactory);
         } else {
             this.client = new HttpClient();
@@ -315,34 +317,46 @@ public class JettyConnector extends RequestWriter implements Connector {
         }
     }
 
-    private ContentProvider getBytesProvider(final ClientRequest requestContext) {
-        final Object entity = requestContext.getEntity();
+    private ContentProvider getBytesProvider(final ClientRequest clientRequest) {
+        final Object entity = clientRequest.getEntity();
 
         if (entity == null) {
             return null;
         }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        clientRequest.setStreamProvider(new OutboundMessageContext.StreamProvider() {
+            @Override
+            public OutputStream getOutputStream(int contentLength) throws IOException {
+                return outputStream;
+            }
+        });
+
         try {
-            final RequestEntityWriter rew = this.getRequestEntityWriter(requestContext);
-            rew.writeRequestEntity(outputStream);
+            clientRequest.writeEntity();
         } catch (IOException e) {
             throw new ProcessingException("Failed to write request entity.", e);
         }
         return new BytesContentProvider(outputStream.toByteArray());
     }
 
-    private ContentProvider getStreamProvider(final ClientRequest requestContext) {
-        final Object entity = requestContext.getEntity();
+    private ContentProvider getStreamProvider(final ClientRequest clientRequest) {
+        final Object entity = clientRequest.getEntity();
 
         if (entity == null) {
             return null;
         }
 
-        OutputStreamContentProvider streamContentProvider = new OutputStreamContentProvider();
+        final OutputStreamContentProvider streamContentProvider = new OutputStreamContentProvider();
+        clientRequest.setStreamProvider(new OutboundMessageContext.StreamProvider() {
+            @Override
+            public OutputStream getOutputStream(int contentLength) throws IOException {
+                return streamContentProvider.getOutputStream();
+            }
+        });
+
         try {
-            final RequestEntityWriter rew = this.getRequestEntityWriter(requestContext);
-            rew.writeRequestEntity(streamContentProvider.getOutputStream());
+            clientRequest.writeEntity();
         } catch (IOException e) {
             throw new ProcessingException("Failed to write request entity.", e);
         }

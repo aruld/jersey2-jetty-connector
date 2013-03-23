@@ -91,6 +91,7 @@ public class NoEntityTest extends JerseyTest {
 
         for (int i = 0; i < 5; i++) {
             Response cr = r.request().get();
+            cr.close();
         }
     }
 
