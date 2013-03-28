@@ -60,7 +60,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jetty.version>9.0.0.v20130308</jetty.version>
-        <jersey.version>2.0-m13-3</jersey.version>
+        <jersey.version>2.0-rc1</jersey.version>
     </properties>
 
     <licenses>
@@ -107,21 +107,6 @@
         </dependency>
 
     </dependencies>
-
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>oss.sonatype.org</id>-->
-            <!--<name>Jetty Snapshot Repository</name>-->
-            <!--<layout>default</layout>-->
-            <!--<url>http://oss.sonatype.org/content/groups/jetty/</url>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-            <!--<releases>-->
-                <!--<enabled>false</enabled>-->
-            <!--</releases>-->
-        <!--</repository>-->
-    <!--</repositories>-->
 
     <build>
         <plugins>
