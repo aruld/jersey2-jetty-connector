@@ -203,14 +203,7 @@ public class JettyConnector implements Connector {
                 LOGGER.log(Level.SEVERE, null, e);
             }
 
-            if (!jerseyResponse.hasEntity()) {
-                jerseyResponse.bufferEntity();
-                jerseyResponse.close();
-            }
-
             return jerseyResponse;
-
-
         } catch (Exception e) {
             throw new ProcessingException(e);
         }
