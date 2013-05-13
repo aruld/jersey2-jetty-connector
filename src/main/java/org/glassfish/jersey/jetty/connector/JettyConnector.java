@@ -195,7 +195,11 @@ public class JettyConnector implements Connector {
 
         try {
             final ContentResponse jettyResponse = jettyRequest.send();
-            final ClientResponse jerseyResponse = new ClientResponse(Statuses.from(jettyResponse.getStatus()), jerseyRequest);
+            final javax.ws.rs.core.Response.StatusType status = jettyResponse.getReason() == null ?
+                    Statuses.from(jettyResponse.getStatus()) :
+                    Statuses.from(jettyResponse.getStatus(), jettyResponse.getReason());
+
+            final ClientResponse jerseyResponse = new ClientResponse(status, jerseyRequest);
             processResponseHeaders(jettyResponse.getHeaders(), jerseyResponse);
             try {
                 jerseyResponse.setEntityStream(new HttpClientResponseInputStream(jettyResponse));
