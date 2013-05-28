@@ -51,13 +51,12 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.glassfish.jersey.test.spi.TestContainer;
 
 import org.junit.Test;
 
+import java.net.URI;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -92,15 +91,28 @@ public class FollowRedirectsTest extends JerseyTest {
     }
 
     @Override
-    protected Client getClient(TestContainer tc, ApplicationHandler applicationHandler) {
-        Client c = super.getClient(tc, applicationHandler);
-        ClientConfig cc = new ClientConfig().connector(new JettyConnector(c.getConfiguration()));
-        return ClientBuilder.newClient(cc);
+    protected void configureClient(ClientConfig clientConfig) {
+        clientConfig.property(JettyClientProperties.FOLLOW_REDIRECTS, false);
+        clientConfig.connector(new JettyConnector(clientConfig));
     }
 
     @Test
     public void testDoFollow() {
-        Response r = target("test/redirect").request().get();
+        final URI u = target().getUri();
+        ClientConfig clientConfig = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
+        clientConfig.connector(new JettyConnector(clientConfig));
+        Client c = ClientBuilder.newClient(clientConfig);
+        WebTarget t = c.target(u);
+        Response r = t.path("test/redirect").request().get();
+        assertEquals(200, r.getStatus());
+        assertEquals("GET", r.readEntity(String.class));
+    }
+
+    @Test
+    public void testDoFollowPerRequestOverride() {
+        WebTarget t = target("test/redirect");
+        t.property(ClientProperties.FOLLOW_REDIRECTS, true);
+        Response r = t.request().get();
         assertEquals(200, r.getStatus());
         assertEquals("GET", r.readEntity(String.class));
     }
@@ -108,7 +120,18 @@ public class FollowRedirectsTest extends JerseyTest {
     @Test
     public void testDontFollow() {
         WebTarget t = target("test/redirect");
-        t.property(ClientProperties.FOLLOW_REDIRECTS, false);
         assertEquals(303, t.request().get().getStatus());
+    }
+
+    @Test
+    public void testDontFollowPerRequestOverride() {
+        final URI u = target().getUri();
+        ClientConfig clientConfig = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
+        clientConfig.connector(new JettyConnector(clientConfig));
+        Client c = ClientBuilder.newClient(clientConfig);
+        WebTarget t = c.target(u);
+        t.property(ClientProperties.FOLLOW_REDIRECTS, false);
+        Response r = t.path("test/redirect").request().get();
+        assertEquals(303, r.getStatus());
     }
 }

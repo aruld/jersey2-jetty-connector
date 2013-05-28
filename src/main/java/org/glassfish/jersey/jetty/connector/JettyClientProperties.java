@@ -46,7 +46,6 @@ package org.glassfish.jersey.jetty.connector;
  */
 public class JettyClientProperties {
 
-
     /**
      * Support for specifying SSL configuration for HTTPS connections.
      * Used only when making HTTPS requests.
@@ -111,5 +110,19 @@ public class JettyClientProperties {
      */
     public static final String PROXY_PASSWORD =
             "jersey.config.jetty.client.proxyPassword";
+
+    /**
+     * Automatic redirection set globally on the client instance.
+     * A value of {@code true} declares that the client will
+     * automatically redirect to the URI declared in 3xx responses.
+     *
+     * The value MUST be an instance convertible to {@link java.lang.Boolean}.
+     * <p />
+     * The default value is {@code true}.
+     * <p />
+     * The name of the configuration property is <tt>{@value}</tt>.
+     */
+    public static final String FOLLOW_REDIRECTS =
+            "jersey.config.jetty.client.followRedirects";
 
 }

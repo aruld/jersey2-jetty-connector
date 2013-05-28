@@ -69,7 +69,6 @@ import java.net.CookieStore;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -89,6 +88,7 @@ import java.util.logging.Logger;
  * <li>{@link JettyClientProperties#PROXY_URI}</li>
  * <li>{@link JettyClientProperties#PROXY_USERNAME}</li>
  * <li>{@link JettyClientProperties#PROXY_PASSWORD}</li>
+ * <li>{@link JettyClientProperties#FOLLOW_REDIRECTS}</li>
  * </ul>
  * <p/>
  *
@@ -143,8 +143,12 @@ public class JettyConnector implements Connector {
                 client.setProxyConfiguration(proxyConfig);
             }
 
-            if (disableCookies)
+            if (disableCookies) {
                 client.setCookieStore(new HttpCookieStore.Empty());
+            }
+
+            // Controls redirects globally on the client instance. This takes precedence over per-request redirects.
+            client.setFollowRedirects(PropertiesHelper.getValue(config.getProperties(), JettyClientProperties.FOLLOW_REDIRECTS, true));
         }
 
         try {
@@ -164,7 +168,6 @@ public class JettyConnector implements Connector {
             throw new ProcessingException(LocalizationMessages.WRONG_PROXY_URI_TYPE(JettyClientProperties.PROXY_URI));
         }
     }
-
 
     /**
      * Get the {@link HttpClient}.
@@ -211,25 +214,22 @@ public class JettyConnector implements Connector {
         } catch (Exception e) {
             throw new ProcessingException(e);
         }
-
     }
 
-    private void processResponseHeaders(final HttpFields headers, final ClientResponse jerseyResponse) {
-        final Iterator<HttpField> itr = headers.iterator();
-        while (itr.hasNext()) {
-            HttpField header = itr.next();
-            List<String> list = jerseyResponse.getHeaders().get(header.getName());
+    private void processResponseHeaders(final HttpFields respHeaders, final ClientResponse jerseyResponse) {
+        for (HttpField header : respHeaders) {
+            final String headerName = header.getName();
+            final MultivaluedMap<String, String> headers = jerseyResponse.getHeaders();
+            List<String> list = headers.get(headerName);
             if (list == null) {
                 list = new ArrayList<String>();
             }
             list.add(header.getValue());
-            jerseyResponse.getHeaders().addAll(header.getName(), list);
+            headers.put(headerName, list);
         }
-
     }
 
     private static final class HttpClientResponseInputStream extends FilterInputStream {
-
         HttpClientResponseInputStream(final ContentResponse jettyResponse) throws IOException {
             super(getInputStream(jettyResponse));
         }
@@ -291,7 +291,8 @@ public class JettyConnector implements Connector {
                 break;
         }
 
-        request.followRedirects(PropertiesHelper.getValue(clientRequest.getConfiguration().getProperties(), ClientProperties.FOLLOW_REDIRECTS, true));
+        // Per-request override
+        request.followRedirects(PropertiesHelper.getValue(clientRequest.getConfiguration().getProperties(), ClientProperties.FOLLOW_REDIRECTS, client.isFollowRedirects()));
         writeOutBoundHeaders(clientRequest.getHeaders(), request);
         return request;
     }
@@ -391,18 +392,14 @@ public class JettyConnector implements Connector {
             failure[0] = t;
             callback.failure(t);
         }
-
         final SettableFuture<Object> errorFuture = SettableFuture.create();
         errorFuture.setException(failure[0]);
         return errorFuture;
-
     }
 
     private Request buildAsyncRequest(final Request jettyRequest) {
         final Request request = client.newRequest(jettyRequest.getURI()).method(jettyRequest.getMethod()).content(jettyRequest.getContent()).followRedirects(jettyRequest.isFollowRedirects());
-        Iterator<HttpField> itr = jettyRequest.getHeaders().iterator();
-        while (itr.hasNext()) {
-            HttpField header = itr.next();
+        for (HttpField header : jettyRequest.getHeaders()) {
             request.getHeaders().add(header.getName(), header.getValue());
         }
         return request;
@@ -412,13 +409,10 @@ public class JettyConnector implements Connector {
         final ClientResponse jerseyResponse = new ClientResponse(Statuses.from(jettyResponse.getStatus()), jerseyRequest);
         processResponseHeaders(jettyResponse.getHeaders(), jerseyResponse);
         jerseyResponse.setEntityStream(new ByteBufferBackedInputStream(content));
-
         return jerseyResponse;
-
     }
 
     private static final class ByteBufferBackedInputStream extends InputStream {
-
         ByteBuffer buf;
 
         public ByteBufferBackedInputStream(ByteBuffer buf) {
