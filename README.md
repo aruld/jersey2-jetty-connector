@@ -33,11 +33,11 @@ Setup
 ```
 
 
-Usage
+Basic Usage
 -----
 
     ClientConfig cc = new ClientConfig();
-    cc.connector(new JettyConnector(clientConfig));
+    cc.connector(new JettyConnector(cc));
     cc.register(new LoggingFilter());
     Client client = ClientBuilder.newClient(cc);
 
@@ -58,61 +58,35 @@ Usage
     client.close();
 
 
-Server-side Logging
+Basic Auth
+-----
+
+    ClientConfig cc = new ClientConfig();
+    cc.property(JettyClientProperties.BASIC_AUTH, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
+    cc.connector(new JettyConnector(cc));
+    Client client = ClientBuilder.newClient(cc);
+
+Cookie Handling
+-------
+
+    ClientConfig cc = new ClientConfig();
+    cc.property(JettyClientProperties.DISABLE_COOKIES, true);//ignore all cookies
+    Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+
+Redirects
 ------
 
-    Feb 17, 2013 11:27:35 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 1 * LoggingFilter - Request received on thread Grizzly-worker(1)
-    1 > GET http://localhost:8080/test
-    1 > user-agent: Jersey/2.0-m12-1 (Jetty/9.0.0-SNAPSHOT)
-    1 > host: localhost:8080
-    1 > accept-encoding: gzip
+    ClientConfig cc = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);//global redirect
+    cc.connector(new JettyConnector(cc));
+    Client c = ClientBuilder.newClient(cc);
+    WebTarget t = c.target(u);
+    t.property(ClientProperties.FOLLOW_REDIRECTS, false);//per-request override
 
-    Feb 17, 2013 11:27:37 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 2 * LoggingFilter - Response received on thread Grizzly-worker(1)
-    2 < 200
-    2 < Content-Type: text/plain
-    GET
-
-    Feb 17, 2013 11:27:37 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 3 * LoggingFilter - Request received on thread Grizzly-worker(2)
-    3 > GET http://localhost:8080/test
-    3 > user-agent: Jersey/2.0-m12-1 (Jetty/9.0.0-SNAPSHOT)
-    3 > host: localhost:8080
-    3 > accept-encoding: gzip
-
-    Feb 17, 2013 11:27:39 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 4 * LoggingFilter - Response received on thread Grizzly-worker(2)
-    4 < 200
-    4 < Content-Type: text/plain
-    GET
-
-Client-side Logging
+Timeouts
 ------
 
-    2013-02-17 11:27:34.570:INFO:oejc.HttpClient:main: Started org.eclipse.jetty.client.HttpClient@789caeb2
-    Feb 17, 2013 11:27:34 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 1 * LoggingFilter - Request received on thread main
-    1 > GET http://localhost:8080/test
+    ClientConfig cc = new ClientConfig().property(ClientProperties.READ_TIMEOUT, 1000).property(ClientProperties.CONNECT_TIMEOUT, 1000);
+    cc.connector(new JettyConnector(cc));
+    Client c = ClientBuilder.newClient(cc);
 
-    Feb 17, 2013 11:27:37 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 2 * LoggingFilter - Response received on thread main
-    2 < 200
-    2 < Content-Type: text/plain
-    2 < Date: Sun, 17 Feb 2013 21:27:37 GMT
-    2 < Content-Length: 3
-
-    GET
-    Feb 17, 2013 11:27:37 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 3 * LoggingFilter - Request received on thread jersey-client-async-executor-0
-    3 > GET http://localhost:8080/test
-
-    GET
-    Feb 17, 2013 11:27:39 AM org.glassfish.jersey.filter.LoggingFilter log
-    INFO: 4 * LoggingFilter - Response received on thread HttpClient@2023534258-18
-    4 < 200
-    4 < Content-Type: text/plain
-    4 < Date: Sun, 17 Feb 2013 21:27:39 GMT
-    4 < Content-Length: 3
-
-    2013-02-17 11:27:39.096:INFO:oejc.HttpClient:main: Stopped org.eclipse.jetty.client.HttpClient@789caeb2
+Check out tests for more usage!
