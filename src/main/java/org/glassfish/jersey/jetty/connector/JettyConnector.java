@@ -83,6 +83,7 @@ import java.util.logging.Logger;
  * The following properties are only supported at construction of this class:
  * <ul>
  * <li>{@link ClientProperties#ASYNC_THREADPOOL_SIZE}</li>
+ * <li>{@link ClientProperties#CONNECT_TIMEOUT}</li>
  * <li>{@link JettyClientProperties#SSL_CONFIG}</li>
  * <li>{@link JettyClientProperties#BASIC_AUTH}</li>
  * <li>{@link JettyClientProperties#DISABLE_COOKIES}</li>
@@ -152,7 +153,7 @@ public class JettyConnector implements Connector {
                 client.setCookieStore(new HttpCookieStore.Empty());
             }
 
-            // Controls redirects globally on the client instance. This takes precedence over per-request redirects.
+            // Controls redirects globally on the client instance.
             client.setFollowRedirects(PropertiesHelper.getValue(config.getProperties(), JettyClientProperties.FOLLOW_REDIRECTS, true));
         }
 
