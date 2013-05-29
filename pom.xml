@@ -71,12 +71,12 @@
         </license>
     </licenses>
 
-    <repositories>
-        <repository>
-            <id>promoted.repo</id>
-            <url>https://maven.java.net/content/groups/promoteds</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>promoted.repo</id>-->
+            <!--<url>https://maven.java.net/content/groups/promoteds</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
     <dependencies>
         <dependency>
