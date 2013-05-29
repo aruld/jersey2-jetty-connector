@@ -14,7 +14,7 @@ Supported HTTP verbs: GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, MOV
 Requirements
 ----
 
-The project requires JDK 7, since Jetty 9 required JDK 7.
+JDK 7 is required to run Jetty 9 connector.
 
 Setup
 -----
@@ -28,7 +28,7 @@ Setup
     <dependency>
         <groupId>org.glassfish.jersey.connectors</groupId>
         <artifactId>jersey-jetty-connector</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.0</version>
     </dependency>
 ```
 
