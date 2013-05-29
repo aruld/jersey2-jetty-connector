@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,6 +121,10 @@ public class JettyConnector implements Connector {
         }
 
         if (config != null) {
+            final Object connectTimeout = config.getProperties().get(ClientProperties.CONNECT_TIMEOUT);
+            if (connectTimeout != null && connectTimeout instanceof Integer && (Integer)connectTimeout > 0) {
+                client.setConnectTimeout((Integer) connectTimeout);
+            }
             final Object threadPoolSize = config.getProperties().get(ClientProperties.ASYNC_THREADPOOL_SIZE);
             if (threadPoolSize != null && threadPoolSize instanceof Integer && (Integer) threadPoolSize > 0) {
                 final String name = HttpClient.class.getSimpleName() + "@" + hashCode();
@@ -293,6 +298,10 @@ public class JettyConnector implements Connector {
 
         // Per-request override
         request.followRedirects(PropertiesHelper.getValue(clientRequest.getConfiguration().getProperties(), ClientProperties.FOLLOW_REDIRECTS, client.isFollowRedirects()));
+        final Object readTimeout = clientRequest.getConfiguration().getProperties().get(ClientProperties.READ_TIMEOUT);
+        if (readTimeout != null && readTimeout instanceof Integer && (Integer)readTimeout > 0) {
+            request.timeout((Integer) readTimeout, TimeUnit.MILLISECONDS);
+        }
         writeOutBoundHeaders(clientRequest.getHeaders(), request);
         return request;
     }
