@@ -71,13 +71,6 @@
         </license>
     </licenses>
 
-    <repositories>
-        <repository>
-            <id>promoted.repo</id>
-            <url>https://maven.java.net/content/groups/promoted</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
