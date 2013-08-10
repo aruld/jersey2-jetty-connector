@@ -66,6 +66,20 @@ Basic Auth
     cc.connector(new JettyConnector(cc));
     Client client = ClientBuilder.newClient(cc);
 
+SSL
+---
+
+    SslConfigurator sslConfig = SslConfigurator.newInstance()
+            .trustStoreBytes(ByteStreams.toByteArray(trustStore))
+            .trustStorePassword("asdfgh")
+            .keyStoreBytes(ByteStreams.toByteArray(keyStore))
+            .keyPassword("asdfgh");
+
+    ClientConfig cc = new ClientConfig();
+    cc.property(JettyClientProperties.SSL_CONFIG, sslConfig);
+    cc.connector(new JettyConnector(cc));
+    Client client = ClientBuilder.newClient(cc);
+
 Cookie Handling
 -------
 
