@@ -5,9 +5,9 @@ Jersey 2 JAX-RS Client Connector for Jetty
 ===============================
 
 Jetty connector is based on Jersey 2 JAX-RS Client framework. It implements support for synchronous and
-asynchronous client invocation using Jetty 9 Fluent [Client](http://www.eclipse.org/jetty/documentation/current/clients.html) API.
+asynchronous client invocation using Jetty 9 Fluent [Client](http://www.eclipse.org/jetty/documentation/current/clients.html) API to perform HTTP and HTTPS requests.
 
-Features include cookie handling, basic authentication, proxy server support, global redirects, timeouts and SSL.
+Features include Redirect support, Cookies support, Authentication support, Forward proxy support.
 
 Supported HTTP verbs: GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT, MOVE
 
