@@ -141,9 +141,9 @@ public class MainTest {
 
     /**
      * Test to see that SSLHandshakeException is thrown when client don't have
-     * trusted key.
+     * trusted key. Jetty client throws an EofException when handling SSL issues.
      */
-    @Test(timeout = 60000)
+    @Test
     public void testSSLAuth1() throws Exception {
         final InputStream trustStore = MainTest.class.getResourceAsStream("/truststore_client");
         SslConfigurator sslConfig = SslConfigurator.newInstance()
@@ -167,9 +167,12 @@ public class MainTest {
         try {
             target.path("/").request().get(String.class);
         } catch (Exception e) {
+            e.printStackTrace();
             caught = true;
         }
 
         assertTrue(caught);
+        // solaris throws java.net.SocketException instead of SSLHandshakeException
+        // assertTrue(msg.contains("SSLHandshakeException"));
     }
 }

@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/aruld/jersey2-jetty-connector.png)](https://travis-ci.org/aruld/jersey2-jetty-connector)
 [![Build Status](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/badge/icon)](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/)
 
 Jersey 2 JAX-RS Client Connector for Jetty
