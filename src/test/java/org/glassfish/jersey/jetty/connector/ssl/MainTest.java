@@ -76,7 +76,7 @@ public class MainTest {
     /**
      * Test to see that the correct Http status is returned.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSSLWithAuth() throws Exception {
         final InputStream trustStore = MainTest.class.getResourceAsStream("/truststore_client");
         final InputStream keyStore = MainTest.class.getResourceAsStream("/keystore_client");
@@ -109,7 +109,7 @@ public class MainTest {
      * Test to see that HTTP 401 is returned when client tries to GET without
      * proper credentials.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testHTTPBasicAuth1() throws Exception {
         final InputStream trustStore = MainTest.class.getResourceAsStream("/truststore_client");
         final InputStream keyStore = MainTest.class.getResourceAsStream("/keystore_client");
@@ -143,7 +143,7 @@ public class MainTest {
      * Test to see that SSLHandshakeException is thrown when client don't have
      * trusted key.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSSLAuth1() throws Exception {
         final InputStream trustStore = MainTest.class.getResourceAsStream("/truststore_client");
         SslConfigurator sslConfig = SslConfigurator.newInstance()
