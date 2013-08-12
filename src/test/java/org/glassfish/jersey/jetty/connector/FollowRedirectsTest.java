@@ -106,6 +106,7 @@ public class FollowRedirectsTest extends JerseyTest {
         Response r = t.path("test/redirect").request().get();
         assertEquals(200, r.getStatus());
         assertEquals("GET", r.readEntity(String.class));
+        c.close();
     }
 
     @Test
@@ -133,5 +134,6 @@ public class FollowRedirectsTest extends JerseyTest {
         t.property(ClientProperties.FOLLOW_REDIRECTS, false);
         Response r = t.path("test/redirect").request().get();
         assertEquals(303, r.getStatus());
+        c.close();
     }
 }

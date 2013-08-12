@@ -192,6 +192,7 @@ public class HelloWorldTest extends JerseyTest {
         assertEquals(HelloWorldResource.CLICHED_MESSAGE, s);
         assertEquals(1, CustomLoggingFilter.preFilterCalled);
         assertEquals(1, CustomLoggingFilter.postFilterCalled);
+        client.close();
     }
 
     @Test
@@ -203,6 +204,7 @@ public class HelloWorldTest extends JerseyTest {
         assertEquals(HelloWorldResource.CLICHED_MESSAGE, s);
         assertEquals(1, CustomLoggingFilter.preFilterCalled);
         assertEquals(1, CustomLoggingFilter.postFilterCalled);
+        client.close();
     }
 
     @Test
@@ -238,6 +240,7 @@ public class HelloWorldTest extends JerseyTest {
         assertEquals(HelloWorldResource.CLICHED_MESSAGE, s);
         assertEquals(1, CustomLoggingFilter.preFilterCalled);
         assertEquals(1, CustomLoggingFilter.postFilterCalled);
+        client.close();
     }
 
 }

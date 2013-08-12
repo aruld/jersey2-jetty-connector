@@ -85,7 +85,7 @@ import java.util.logging.Logger;
  * <li>{@link ClientProperties#ASYNC_THREADPOOL_SIZE}</li>
  * <li>{@link ClientProperties#CONNECT_TIMEOUT}</li>
  * <li>{@link JettyClientProperties#SSL_CONFIG}</li>
- * <li>{@link JettyClientProperties#BASIC_AUTH}</li>
+ * <li>{@link JettyClientProperties#PREEMPTIVE_BASIC_AUTHENTICATION}</li>
  * <li>{@link JettyClientProperties#DISABLE_COOKIES}</li>
  * <li>{@link JettyClientProperties#PROXY_URI}</li>
  * <li>{@link JettyClientProperties#PROXY_USERNAME}</li>
@@ -137,7 +137,7 @@ public class JettyConnector implements Connector {
             disableCookies = (disableCookies != null) ? disableCookies : false;
 
             AuthenticationStore auth = client.getAuthenticationStore();
-            Object basicAuthProvider = config.getProperty(JettyClientProperties.BASIC_AUTH);
+            Object basicAuthProvider = config.getProperty(JettyClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION);
             if (basicAuthProvider != null && (basicAuthProvider instanceof BasicAuthentication)) {
                 auth.addAuthentication((BasicAuthentication) basicAuthProvider);
             }

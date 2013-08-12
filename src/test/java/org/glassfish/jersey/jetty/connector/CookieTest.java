@@ -91,6 +91,7 @@ public class CookieTest extends JerseyTest {
 
         assertEquals("NO-COOKIE", r.request().get(String.class));
         assertEquals("value", r.request().get(String.class));
+        client.close();
     }
 
     @Test
@@ -108,6 +109,7 @@ public class CookieTest extends JerseyTest {
         } else {
             assertNull(((JettyConnector) cc.getConnector()).getCookieStore());
         }
+        client.close();
     }
 
     @Test
@@ -122,5 +124,6 @@ public class CookieTest extends JerseyTest {
         assertNotNull(((JettyConnector) cc.getConnector()).getCookieStore().getCookies());
         assertEquals(1, ((JettyConnector) cc.getConnector()).getCookieStore().getCookies().size());
         assertEquals("value", ((JettyConnector) cc.getConnector()).getCookieStore().getCookies().get(0).getValue());
+        client.close();
     }
 }

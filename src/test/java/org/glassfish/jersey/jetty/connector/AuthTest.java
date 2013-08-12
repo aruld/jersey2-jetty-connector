@@ -48,6 +48,8 @@ import org.junit.Test;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
@@ -162,28 +164,37 @@ public class AuthTest extends JerseyTest {
         return config;
     }
 
-    @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.property(JettyClientProperties.BASIC_AUTH, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
-        clientConfig.connector(new JettyConnector(clientConfig));
-    }
-
     @Test
     public void testAuthGet() {
-        Response response = target(PATH).request().get();
+        ClientConfig cc = new ClientConfig();
+        cc.property(JettyClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+
+        Response response = client.target(getBaseUri()).path(PATH).request().get();
         assertEquals("GET", response.readEntity(String.class));
+        client.close();
     }
 
     @Test
     public void testAuthPost() {
-        Response response = target(PATH).request().post(Entity.text("POST"));
+        ClientConfig cc = new ClientConfig();
+        cc.property(JettyClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+
+        Response response = client.target(getBaseUri()).path(PATH).request().post(Entity.text("POST"));
         assertEquals("POST", response.readEntity(String.class));
+        client.close();
     }
 
     @Test
     public void testAuthDelete() {
-        Response response = target(PATH).request().delete();
+        ClientConfig cc = new ClientConfig();
+        cc.property(JettyClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
+        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+
+        Response response = client.target(getBaseUri()).path(PATH).request().delete();
         assertEquals(response.getStatus(), 204);
+        client.close();
     }
 
 }

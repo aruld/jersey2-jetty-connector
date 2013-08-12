@@ -101,5 +101,6 @@ public class HttpHeadersTest extends JerseyTest {
 
         assertEquals(200, response.getStatus());
         assertTrue(response.hasEntity());
+        c.close();
     }
 }

@@ -40,9 +40,9 @@
 package org.glassfish.jersey.jetty.connector.ssl;
 
 import com.google.common.io.ByteStreams;
-import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jetty.connector.JettyClientProperties;
 import org.glassfish.jersey.jetty.connector.JettyConnector;
@@ -89,11 +89,12 @@ public class MainTest {
         ClientConfig cc = new ClientConfig();
         cc.property(JettyClientProperties.SSL_CONFIG, sslConfig);
 
-        // client basic auth demonstration
-        cc.property(JettyClientProperties.BASIC_AUTH, new BasicAuthentication(Server.BASE_URI, SecurityFilter.REALM, "user", "password"));
         cc.connector(new JettyConnector(cc));
 
         Client client = ClientBuilder.newClient(cc);
+
+        // client basic auth demonstration
+        client.register(new HttpBasicAuthFilter("user", "password"));
 
         System.out.println("Client: GET " + Server.BASE_URI);
 
@@ -103,6 +104,8 @@ public class MainTest {
         final Response response = target.path("/").request().get(Response.class);
 
         assertEquals(200, response.getStatus());
+
+        client.close();
     }
 
     /**
@@ -137,6 +140,8 @@ public class MainTest {
         response = target.path("/").request().get(Response.class);
 
         assertEquals(401, response.getStatus());
+
+        client.close();
     }
 
     /**
@@ -167,12 +172,13 @@ public class MainTest {
         try {
             target.path("/").request().get(String.class);
         } catch (Exception e) {
-            e.printStackTrace();
             caught = true;
         }
 
         assertTrue(caught);
         // solaris throws java.net.SocketException instead of SSLHandshakeException
         // assertTrue(msg.contains("SSLHandshakeException"));
+
+        client.close();
     }
 }

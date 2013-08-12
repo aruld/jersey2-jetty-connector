@@ -72,15 +72,20 @@ public class JettyClientProperties {
 
     /**
      * The credential provider that should be used to retrieve
-     * credentials from a user. Credentials needed for proxy authentication
-     * are stored here as well.
+     * credentials from a user.
+     *
+     * If an {@link org.eclipse.jetty.client.api.Authentication} mechanism is found,
+     * it is then used for the given request, returning an {@link org.eclipse.jetty.client.api.Authentication.Result},
+     * which is then stored in the {@link org.eclipse.jetty.client.api.AuthenticationStore}
+     * so that subsequent requests can be preemptively authenticated.
+
      * <p/>
      * The value MUST be an instance of {@link
-     * org.eclipse.jetty.client.api.AuthenticationStore}.  If
+     * org.eclipse.jetty.client.util.BasicAuthentication}.  If
      * the property is absent a default provider will be used.
      */
-    public static final String BASIC_AUTH =
-            "jersey.config.jetty.client.basicAuth";
+    public static final String PREEMPTIVE_BASIC_AUTHENTICATION =
+            "jersey.config.jetty.client.preemptiveBasicAuthentication";
 
     /**
      * A value of a URI to configure the proxy host and proxy port to proxy

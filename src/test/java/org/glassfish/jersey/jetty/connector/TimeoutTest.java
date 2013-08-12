@@ -124,6 +124,7 @@ public class TimeoutTest extends JerseyTest {
                 fail();
             }
         }
+        c.close();
     }
 
     @Test
@@ -141,5 +142,6 @@ public class TimeoutTest extends JerseyTest {
                 fail();
             }
         }
+        c.close();
     }
 }

@@ -61,7 +61,15 @@ Basic Auth
 -----
 
     ClientConfig cc = new ClientConfig();
-    cc.property(JettyClientProperties.BASIC_AUTH, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
+    cc.connector(new JettyConnector(cc));
+    Client client = ClientBuilder.newClient(cc);
+    client.register(new HttpBasicAuthFilter("user", "password"));
+
+Preemptive Basic Auth
+-----
+
+    ClientConfig cc = new ClientConfig();
+    cc.property(JettyClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION, new BasicAuthentication(getBaseUri(), "WallyWorld", "name", "password"));
     cc.connector(new JettyConnector(cc));
     Client client = ClientBuilder.newClient(cc);
 
