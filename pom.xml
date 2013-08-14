@@ -47,11 +47,11 @@
     <!--<parent>-->
         <!--<groupId>org.glassfish.jersey.connectors</groupId>-->
         <!--<artifactId>project</artifactId>-->
-        <!--<version>2.1</version>-->
+        <!--<version>2.2</version>-->
     <!--</parent>-->
     <groupId>org.glassfish.jersey.connectors</groupId>
     <artifactId>jersey-jetty-connector</artifactId>
-    <version>2.1</version>
+    <version>2.2</version>
     <packaging>jar</packaging>
     <name>jersey-connectors-jetty</name>
 
@@ -60,7 +60,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jetty.version>9.0.4.v20130625</jetty.version>
-        <jersey.version>2.1</jersey.version>
+        <jersey.version>2.2</jersey.version>
     </properties>
 
     <licenses>
