@@ -408,7 +408,7 @@ public class JettyConnector implements Connector {
     }
 
     private Request buildAsyncRequest(final Request jettyRequest) {
-        final Request request = client.newRequest(jettyRequest.getURI()).method(jettyRequest.getMethod()).content(jettyRequest.getContent()).followRedirects(jettyRequest.isFollowRedirects());
+        final Request request = client.newRequest(jettyRequest.getURI()).method(jettyRequest.method()).content(jettyRequest.getContent()).followRedirects(jettyRequest.isFollowRedirects());
         for (HttpField header : jettyRequest.getHeaders()) {
             request.getHeaders().add(header.getName(), header.getValue());
         }
