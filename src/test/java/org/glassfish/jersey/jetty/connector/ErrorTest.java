@@ -73,8 +73,8 @@ public class ErrorTest extends JerseyTest {
 
 
     @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.connector(new JettyConnector(clientConfig));
+    protected void configureClient(ClientConfig config) {
+        config.connector(new JettyConnector(config));
     }
 
 

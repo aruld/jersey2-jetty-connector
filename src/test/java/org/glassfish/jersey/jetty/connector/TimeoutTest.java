@@ -98,8 +98,8 @@ public class TimeoutTest extends JerseyTest {
     }
 
     @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.connector(new JettyConnector(clientConfig));
+    protected void configureClient(ClientConfig config) {
+        config.connector(new JettyConnector(config));
     }
 
     @Test
@@ -112,9 +112,9 @@ public class TimeoutTest extends JerseyTest {
     @Test
     public void testSlow() {
         final URI u = target().getUri();
-        ClientConfig clientConfig = new ClientConfig().property(ClientProperties.READ_TIMEOUT, 1000);
-        clientConfig.connector(new JettyConnector(clientConfig));
-        Client c = ClientBuilder.newClient(clientConfig);
+        ClientConfig config = new ClientConfig().property(ClientProperties.READ_TIMEOUT, 1000);
+        config.connector(new JettyConnector(config));
+        Client c = ClientBuilder.newClient(config);
         WebTarget t = c.target(u);
         try {
             t.path("test/timeout").request().get();
@@ -129,9 +129,9 @@ public class TimeoutTest extends JerseyTest {
 
     @Test
     public void testUnknownHost() throws URISyntaxException {
-        ClientConfig clientConfig = new ClientConfig().property(ClientProperties.CONNECT_TIMEOUT, 1000);
-        clientConfig.connector(new JettyConnector(clientConfig));
-        Client c = ClientBuilder.newClient(clientConfig);
+        ClientConfig config = new ClientConfig().property(ClientProperties.CONNECT_TIMEOUT, 1000);
+        config.connector(new JettyConnector(config));
+        Client c = ClientBuilder.newClient(config);
         final URI u = new URI("http://google.com:81");
         WebTarget target = c.target(u);
         try {

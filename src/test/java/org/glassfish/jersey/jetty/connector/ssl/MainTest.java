@@ -86,12 +86,12 @@ public class MainTest {
                 .keyStoreBytes(ByteStreams.toByteArray(keyStore))
                 .keyPassword("asdfgh");
 
-        ClientConfig cc = new ClientConfig();
-        cc.property(JettyClientProperties.SSL_CONFIG, sslConfig);
+        ClientConfig config = new ClientConfig();
+        config.property(JettyClientProperties.SSL_CONFIG, sslConfig);
 
-        cc.connector(new JettyConnector(cc));
+        config.connector(new JettyConnector(config));
 
-        Client client = ClientBuilder.newClient(cc);
+        Client client = ClientBuilder.newClient(config);
 
         // client basic auth demonstration
         client.register(new HttpBasicAuthFilter("user", "password"));

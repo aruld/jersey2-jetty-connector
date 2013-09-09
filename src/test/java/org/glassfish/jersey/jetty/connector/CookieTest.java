@@ -84,8 +84,8 @@ public class CookieTest extends JerseyTest {
 
     @Test
     public void testCookieResource() {
-        ClientConfig cc = new ClientConfig();
-        Client client = ClientBuilder.newClient(cc.connector(new JettyConnector(cc.getConfiguration())));
+        ClientConfig config = new ClientConfig();
+        Client client = ClientBuilder.newClient(config.connector(new JettyConnector(config.getConfiguration())));
         WebTarget r = client.target(getBaseUri());
 
 

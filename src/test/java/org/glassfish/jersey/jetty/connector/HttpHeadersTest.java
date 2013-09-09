@@ -53,7 +53,6 @@ import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 
@@ -94,13 +93,13 @@ public class HttpHeadersTest extends JerseyTest {
     @Test
     public void testPost() {
         final URI u = target().getUri();
-        Client c = ClientBuilder.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
-        WebTarget t = c.target(u);
+        Client client = ClientBuilder.newClient(new ClientConfig().connector(new JettyConnector(client().getConfiguration())));
+        WebTarget t = client.target(u);
 
         Response response = t.path("test").request().header("X-CLIENT", "client").post(null);
 
         assertEquals(200, response.getStatus());
         assertTrue(response.hasEntity());
-        c.close();
+        client.close();
     }
 }

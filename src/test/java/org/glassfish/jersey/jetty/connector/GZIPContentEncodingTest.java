@@ -85,9 +85,9 @@ public class GZIPContentEncodingTest extends JerseyTest {
     }
 
     @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.register(GZipEncoder.class);
-        clientConfig.connector(new JettyConnector(clientConfig));
+    protected void configureClient(ClientConfig config) {
+        config.register(GZipEncoder.class);
+        config.connector(new JettyConnector(config));
     }
 
     @Test
@@ -103,12 +103,12 @@ public class GZIPContentEncodingTest extends JerseyTest {
 
     @Test
     public void testPostChunked() {
-        ClientConfig cc = new ClientConfig();
-        cc.property(ClientProperties.CHUNKED_ENCODING_SIZE, 1024);
-        cc.connector(new JettyConnector(cc));
-        cc.register(new LoggingFilter(LOGGER, true));
+        ClientConfig config = new ClientConfig();
+        config.property(ClientProperties.CHUNKED_ENCODING_SIZE, 1024);
+        config.connector(new JettyConnector(config));
+        config.register(new LoggingFilter(LOGGER, true));
 
-        Client client = ClientBuilder.newClient(cc);
+        Client client = ClientBuilder.newClient(config);
         WebTarget r = client.target(getBaseUri());
 
         byte[] content = new byte[1024 * 1024];

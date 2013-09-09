@@ -450,7 +450,7 @@ public class JettyConnector implements Connector {
 
     @Override
     public String getName() {
-        return "Jetty/" + Jetty.VERSION;
+        return "Jetty HttpClient " + Jetty.VERSION;
     }
 
     @Override

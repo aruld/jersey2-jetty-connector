@@ -91,17 +91,17 @@ public class FollowRedirectsTest extends JerseyTest {
     }
 
     @Override
-    protected void configureClient(ClientConfig clientConfig) {
-        clientConfig.property(JettyClientProperties.FOLLOW_REDIRECTS, false);
-        clientConfig.connector(new JettyConnector(clientConfig));
+    protected void configureClient(ClientConfig config) {
+        config.property(JettyClientProperties.FOLLOW_REDIRECTS, false);
+        config.connector(new JettyConnector(config));
     }
 
     @Test
     public void testDoFollow() {
         final URI u = target().getUri();
-        ClientConfig clientConfig = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
-        clientConfig.connector(new JettyConnector(clientConfig));
-        Client c = ClientBuilder.newClient(clientConfig);
+        ClientConfig config = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
+        config.connector(new JettyConnector(config));
+        Client c = ClientBuilder.newClient(config);
         WebTarget t = c.target(u);
         Response r = t.path("test/redirect").request().get();
         assertEquals(200, r.getStatus());
@@ -127,13 +127,13 @@ public class FollowRedirectsTest extends JerseyTest {
     @Test
     public void testDontFollowPerRequestOverride() {
         final URI u = target().getUri();
-        ClientConfig clientConfig = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
-        clientConfig.connector(new JettyConnector(clientConfig));
-        Client c = ClientBuilder.newClient(clientConfig);
-        WebTarget t = c.target(u);
+        ClientConfig config = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);
+        config.connector(new JettyConnector(config));
+        Client client = ClientBuilder.newClient(config);
+        WebTarget t = client.target(u);
         t.property(ClientProperties.FOLLOW_REDIRECTS, false);
         Response r = t.path("test/redirect").request().get();
         assertEquals(303, r.getStatus());
-        c.close();
+        client.close();
     }
 }
