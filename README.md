@@ -1,5 +1,3 @@
-[![Build Status](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/badge/icon)](https://buildhive.cloudbees.com/job/aruld/job/jersey2-jetty-connector/org.glassfish.jersey.connectors$jersey-jetty-connector/)
-
 Jersey 2 JAX-RS Client Connector for Jetty
 ===============================
 
@@ -15,7 +13,7 @@ Requirements
 
 JDK 7 is required to run Jetty 9 connector.
 
-Available in Jersey 2.5
+Coming in Jersey 2.5
 ----
 
 This connector is integrated in Jersey 2.5 release. It also includes support for Jetty HTTP and Servlet container in addition to the Jetty Client support.
