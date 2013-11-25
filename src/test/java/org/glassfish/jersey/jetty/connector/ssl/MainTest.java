@@ -146,7 +146,7 @@ public class MainTest {
 
     /**
      * Test to see that SSLHandshakeException is thrown when client don't have
-     * trusted key. Jetty client throws an EofException when handling SSL issues.
+     * trusted key. Jetty throws javax.ws.rs.NotAuthorizedException: HTTP 401 Unauthorized.
      */
     @Test
     public void testSSLAuth1() throws Exception {

@@ -15,6 +15,11 @@ Requirements
 
 JDK 7 is required to run Jetty 9 connector.
 
+Available in Jersey 2.5
+----
+
+This connector is integrated in Jersey 2.5 release. It also includes support for Jetty HTTP and Servlet container in addition to the Jetty Client support.
+
 Setup
 -----
 
@@ -27,7 +32,7 @@ Setup
     <dependency>
         <groupId>org.glassfish.jersey.connectors</groupId>
         <artifactId>jersey-jetty-connector</artifactId>
-        <version>2.1</version>
+        <version>2.5</version>
     </dependency>
 ```
 
@@ -97,7 +102,7 @@ Cookie Handling
 Redirects
 ------
 
-    ClientConfig cc = new ClientConfig().property(JettyClientProperties.FOLLOW_REDIRECTS, true);//global redirect
+    ClientConfig cc = new ClientConfig().property(ClientProperties.FOLLOW_REDIRECTS, true);//global redirect
     cc.connector(new JettyConnector(cc));
     Client c = ClientBuilder.newClient(cc);
     WebTarget t = c.target(u);

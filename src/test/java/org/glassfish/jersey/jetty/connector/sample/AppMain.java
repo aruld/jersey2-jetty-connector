@@ -1,8 +1,8 @@
 package org.glassfish.jersey.jetty.connector.sample;
 
-import org.glassfish.grizzly.http.server.HttpServer;
+import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.*;
@@ -55,11 +55,11 @@ public class AppMain {
             System.out.println("\"Example\" Jersey Application");
             final ResourceConfig resourceConfig = new ResourceConfig(HttpMethodResource.class);
             resourceConfig.registerInstances(new LoggingFilter(LOGGER, true));
-            final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig);
+            final Server server = JettyHttpContainerFactory.createServer(BASE_URI, resourceConfig);
             System.out.println(String.format("Application started.\nTry out %s%s\nHit enter to stop it...", BASE_URI, PATH));
             System.in.read();
             server.stop();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }
     }
